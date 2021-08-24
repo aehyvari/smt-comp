@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPTDIR=`dirname $(readlink -f "$0")`
+SCRIPTDIR=`dirname $(greadlink -f "$0")`
 
 PREPARE="$SCRIPTDIR/../../../tools/prep/prepare_space_xml.py"
 SOLVERS_CSV="$SCRIPTDIR/../../registration/solvers_divisions_final.csv"
@@ -16,6 +16,8 @@ SELECT_SQ="$SCRIPTDIR/../selection/$SELECTION/benchmark_selection_single_query"
 SELECT_INC="$SCRIPTDIR/../selection/$SELECTION/benchmark_selection_incremental"
 SELECT_MV="$SCRIPTDIR/../selection/$SELECTION/benchmark_selection_model_validation"
 SELECT_UC="$SCRIPTDIR/../selection/$SELECTION/benchmark_selection_unsat_core"
+SELECT_CLOUD="$SCRIPTDIR/../selection/$SELECTION/benchmark_selection_cloud_starexec"
+SELECT_PARALLEL="$SCRIPTDIR/../selection/$SELECTION/benchmark_selection_parallel_starexec"
 
 ### Output space xml files
 # Single Query
@@ -43,6 +45,10 @@ OUT_SPACE_UC=
 OUT_SPACE_UC_2018=
 # Model Validation Track
 OUT_SPACE_MV=
+# Starexec parallel
+OUT_SPACE_PARALLEL=
+# Starexec cloud
+OUT_SPACE_CLOUD=
 
 # output usage if called without parameters
 if [ $# -eq 0 ]; then
@@ -64,6 +70,8 @@ do
       echo "    --inc         <file> Incremental track output xml"
       echo "    --uc          <file> Unsat Core track output xml"
       echo "    --mv          <file> Model Validation track output xml"
+      echo "    --parallel    <file> Parallel track output xml"
+      echo "    --cloud       <file> Cloud track output xml"
       echo "    --solvdiv     <file> An optional alternative solvers divisions file"
       echo
       exit
@@ -103,6 +111,14 @@ do
     --include-nc)
       INCLUDE_NONCOMPETITIVE="--include-non-competitive"
       ;;
+    --parallel)
+      shift
+      OUT_SPACE_PARALLEL=$1
+      ;;
+    --cloud)
+      shift
+      OUT_SPACE_CLOUD=$1
+      ;;
     -*)
         echo "ERROR: invalid option '$1'"
         exit 1
@@ -139,3 +155,14 @@ python $PREPARE "$IN_SPACE_NON_INC" "$SOLVERS_CSV" "$OUT_SPACE_UC" \
     -t unsat_core --select "$SELECT_UC" -w \
     $(echo $INCLUDE_NONCOMPETITIVE)
 
+# Parallel track
+[[ -n $OUT_SPACE_PARALLEL ]] && \
+python $PREPARE "$IN_SPACE_NON_INC" "$SOLVERS_CSV" "$OUT_SPACE_PARALLEL" \
+    -t single_query --select "$SELECT_PARALLEL" -w \
+    $INCLUDE_NONCOMPETITIVE
+
+# Cloud track
+[[ -n $OUT_SPACE_CLOUD ]] && \
+python $PREPARE "$IN_SPACE_NON_INC" "$SOLVERS_CSV" "$OUT_SPACE_CLOUD" \
+    -t single_query --select "$SELECT_CLOUD" -w \
+    $INCLUDE_NONCOMPETITIVE

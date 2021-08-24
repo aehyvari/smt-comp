@@ -8,20 +8,26 @@ sq="47304 47543 47546 47966"
 inc="47350 47540 47689"
 mv="47305 47542 47727"
 uc="47790 47815 47866 47867 47916"
+Cloud="48423 AwsCloud"
+Parallel="48437 AwsParallel"
 
 COLORDER=../../tools/process-results/unify_column_order.py
 
 TMPDIR=$(mktemp -d)
 trap "rm -rf ${TMPDIR}" EXIT
 
-for track in sq inc mv uc; do
+for track in sq inc mv uc Cloud Parallel; do
     echo -n "$track:"
     OUTPUT="raw-results-${track}.csv"
     rm -f $OUTPUT
     for id in ${!track}; do
         if [ "$FORCE_DOWNLOAD" == "1" -o \! -d "Job${id}" ]; then
-            curl -o Job${id}_info.zip "https://www.starexec.org/starexec/secure/download?type=job&id=${id}&returnids=true&getcompleted=false"
-            unzip Job${id}_info.zip
+            if [ "$id" != "AwsCloud" -a "$id" != "AwsParallel" ]; then
+                curl -o Job${id}_info.zip "https://www.starexec.org/starexec/secure/download?type=job&id=${id}&returnids=true&getcompleted=false"
+                unzip Job${id}_info.zip
+            else
+                ./aws_fetch.sh $track
+            fi
         fi
         INPUT="Job${id}/Job${id}_info.csv"
         echo -n " Job${id}"

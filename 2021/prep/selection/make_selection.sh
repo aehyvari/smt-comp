@@ -31,7 +31,8 @@ fi
 
 echo "Seed: $SEED"
 
-SCRIPTDIR=`dirname $(readlink -f "$0")`
+#SCRIPTDIR=`dirname $(readlink -f "$0")`
+SCRIPTDIR=`(cd $(dirname $0); pwd)`
 SELECT="$SCRIPTDIR/../../../tools/selection/selection.py"
 
 BENCHMARKS_SQ="$SCRIPTDIR/../SMT-LIB_non_incremental_benchmarks_all.txt"

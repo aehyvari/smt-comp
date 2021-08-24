@@ -1,11 +1,13 @@
 #!/bin/bash
 
-SCRIPTDIR=`dirname $(readlink -f "$0")`
+SCRIPTDIR=`dirname $(greadlink -f "$0")`
 
 PROCESS_CSV="$SCRIPTDIR/../../tools/process-results/process_results.py"
 RESULT_DIR="$SCRIPTDIR/../results"
 NONINC_DECISION="$SCRIPTDIR/../results/sq-disagreements-decision.csv"
 INC_DECISION="$SCRIPTDIR/../results/inc-disagreements-decision.csv"
+CLOUD_DECISIONS="$SCRIPTDIR/../results/Cloud-disagreements-decision.csv"
+PARALLEL_DECISIONS="$SCRIPTDIR/../results/Parallel-disagreements-decision.csv"
 EXCLUDED="$SCRIPTDIR/../prep/SMT-LIB_excluded.txt"
 
 TMPDIR=$(mktemp -d)
@@ -14,7 +16,7 @@ trap "rm -rf $TMPDIR" EXIT
 grep ^incremental $EXCLUDED | cut -d/ -f2- > excluded_incremental.txt
 grep ^non-incremental $EXCLUDED | cut -d/ -f2- > excluded_nonincremental.txt
 
-for i in inc mv sq uc cloud parallel; do
+for i in inc mv sq uc Cloud Parallel; do
     if [ "$i" == "inc" ]; then
         EXCLUDED=excluded_incremental.txt
         DECISION="-i $INC_DECISION"

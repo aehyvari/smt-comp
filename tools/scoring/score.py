@@ -64,6 +64,14 @@ COL_SOLVER_ID_INC_2019 = "Wrapped Solver ID Incremental"
 COL_SOLVER_ID_UC_2019 = "Wrapped Solver ID Unsat Core"
 COL_SOLVER_ID_MV_2019 = "Wrapped Solver ID Model Validation"
 
+# Columns for tracks in solvers csv
+COL_TRACK_SQ = "Single Query Track"
+COL_TRACK_INC = "Incremental Track"
+COL_TRACK_UC = "Unsat Core Track"
+COL_TRACK_MV = "Model Validation Track"
+COL_TRACK_CLOUD = "Cloud Track"
+COL_TRACK_PARALLEL = "Parallel Track"
+
 # Extensions of results .md files
 EXT_SQ = "-single-query.md"
 EXT_INC = "-incremental.md"
@@ -88,6 +96,14 @@ g_tracks = { OPT_TRACK_SQ: TRACK_SQ,
              OPT_TRACK_MV: TRACK_MV,
              OPT_TRACK_CLOUD: TRACK_CLOUD,
              OPT_TRACK_PARALLEL: TRACK_PARALLEL }
+
+g_tracks_to_cols = {
+        OPT_TRACK_SQ: COL_TRACK_SQ,
+        OPT_TRACK_INC: COL_TRACK_INC,
+        OPT_TRACK_UC: COL_TRACK_UC,
+        OPT_TRACK_MV: COL_TRACK_MV,
+        OPT_TRACK_CLOUD: COL_TRACK_CLOUD,
+        OPT_TRACK_PARALLEL: COL_TRACK_PARALLEL }
 
 g_exts = { OPT_TRACK_SQ: EXT_SQ,
            OPT_TRACK_INC: EXT_INC,
@@ -259,13 +275,13 @@ def get_family_scores(data):
 # Helper to add mapping of solver id to solver name and solver variant id and
 # to g_solver_names and g_solver_variants.
 def map_solver_id(row, column):
-    global g_competitive, g_solver_names, g_solver_variants
+    global g_competitive, g_solver_names, g_solver_variants, g_args
     if column not in row:
         return
     solver_id_str = row[column]
     solver_id = int(solver_id_str) if solver_id_str else None
     if solver_id:
-        g_competitive[solver_id] = row[COL_COMPETING] == 'yes'
+        g_competitive[solver_id] = row[COL_COMPETING] == 'yes' and row[g_tracks_to_cols[g_args.track]].strip() != ""
         g_solver_names[solver_id] = row[COL_SOLVER_NAME]
         g_solver_variants[solver_id] = row[COL_VARIANT_OF_ID] \
                 if row[COL_VARIANT_OF_ID] else row[COL_SOLVER_NAME]
@@ -1200,6 +1216,7 @@ def largest_contribution_ranking(data, time_limit, sequential):
 
     weighted_scores = dict()
     for year, ydata in data.groupby('year'):
+        if year not in weighted_scores: weighted_scores[year] = []
         num_job_pairs_total = 0
         scores_top = []
         for division, div_data in data.groupby('division'):
@@ -1263,7 +1280,6 @@ def largest_contribution_ranking(data, time_limit, sequential):
             impact_score, impact_time, n_solvers, n_benchmarks = tup[:4]
             weight = n_solvers * n_benchmarks / num_job_pairs_total
             w_score, w_time = impact_score * weight, impact_time * weight
-            if year not in weighted_scores: weighted_scores[year] = []
             fields = ['score', 'time', 'n_solvers', 'division_size',
                     'first_name', 'division']
             weighted_scores[year].append(dict(zip(fields,\

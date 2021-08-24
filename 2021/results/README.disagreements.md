@@ -42,3 +42,49 @@ Two issues were found and resolved as follows:
    version agrees with the other solvers.
 2. Also in `QF_ABVFP` and in `QF_BVFP`, mathsat disagrees with all other
    solvers on a few benchmarks.  We stick with the majority here.
+
+
+Cloud
+-----
+
+```
+cat raw-results-Cloud.csv  |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq | cut -d, -f1 |uniq -c | grep -v '   1 ' | awk '{print $2}' > Cloud-disagreements.txt
+```
+
+1. In `QF_BVFP` Par4 disagreed with all other on two instances with unknown
+   status:
+    - `QF_BVFP/20170428-Liew-KLEE/imperial_gsl_benchmarks_differentiation_klee.x86_64/query.10.smt2`
+    - `QF_BVFP/20170428-Liew-KLEE/imperial_synthetic_interval_klee_bug_symbolic_increment.x86_64/query.18.smt2`
+2. In `QF_BVFP` Par4 disagreed with all others on one instance with
+   known status:
+    - `QF_BVFP/20170428-Liew-KLEE/imperial_gsl_benchmarks_statistics_klee.x86_64/query.14.smt2`
+2
+3. In `QF_FP` Par4 disagreed with solvers on eight instances with unknown status
+    - `QF_FP/griggio/fmcad12/mul_000003_30000_1.smt2`
+    - `QF_FP/griggio/fmcad12/test_v5_r10_vr10_c1_s15708.smt2`
+    - `QF_FP/griggio/fmcad12/test_v5_r10_vr5_c1_s8690.smt2`
+    - `QF_FP/griggio/fmcad12/test_v5_r15_vr1_c1_s26845.smt2`
+    - `QF_FP/griggio/fmcad12/test_v7_r12_vr1_c1_s703.smt2`
+    - `QF_FP/griggio/fmcad12/test_v5_r10_vr10_c1_s7608.smt2`
+    - `QF_FP/griggio/fmcad12/test_v7_r12_vr1_c1_s10576.smt2`
+    - `QF_FP/griggio/fmcad12/test_v7_r7_vr1_c1_s24449.smt2`
+   In `QF_FP` Par4 disagrees on two instance with known status
+    - `QF_FP/griggio/fmcad12/test_v5_r15_vr5_c1_s23844.smt2`
+    - `QF_FP/griggio/fmcad12/test_v5_r15_vr5_c1_s26657.smt2`
+   In `UFLRA` cvc5-gg disagrees on an instance with known status
+    - `UFLRA/misc/set14.smt2`
+
+
+Parallel
+--------
+
+```
+cat raw-results-Parallel.csv  |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq | cut -d, -f1 |uniq -c | grep -v '   1 ' | awk '{print $2}' > Parallel-disagreements.txt
+```
+
+The disagreements are by the same solvers and in the same instances as
+in Cloud, with the addition of
+
+1. In `QF_FP` Par4 disagrees with one instance with known status
+    - `QF_FP/griggio/fmcad12/test_v5_r10_vr10_c1_s21502.smt2`
+

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-SCRIPTDIR=`dirname $(readlink -f "$0")`
+SCRIPTDIR=`dirname $(greadlink -f "$0")`
 
 YEAR=2021
 SCORE="$SCRIPTDIR/../../tools/scoring/score.py"

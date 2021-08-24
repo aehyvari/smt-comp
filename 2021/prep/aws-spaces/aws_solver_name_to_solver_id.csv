@@ -6,6 +6,6 @@ solver id,solver name
 12,parallelpar
 13,portfolio
 14,stp
-33458,vampirecloud
-33458,vampireparallel
+16,vampirecloud
+16,vampireparallel
 15,stpcloudparallel
