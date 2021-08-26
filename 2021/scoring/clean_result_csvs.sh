@@ -6,22 +6,26 @@ PROCESS_CSV="$SCRIPTDIR/../../tools/process-results/process_results.py"
 RESULT_DIR="$SCRIPTDIR/../results"
 NONINC_DECISION="$SCRIPTDIR/../results/sq-disagreements-decision.csv"
 INC_DECISION="$SCRIPTDIR/../results/inc-disagreements-decision.csv"
-CLOUD_DECISIONS="$SCRIPTDIR/../results/Cloud-disagreements-decision.csv"
-PARALLEL_DECISIONS="$SCRIPTDIR/../results/Parallel-disagreements-decision.csv"
+CLOUD_DECISION="$SCRIPTDIR/../results/Cloud-disagreements-decision.csv"
+PARALLEL_DECISION="$SCRIPTDIR/../results/Parallel-disagreements-decision.csv"
 EXCLUDED="$SCRIPTDIR/../prep/SMT-LIB_excluded.txt"
 
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
-grep ^incremental $EXCLUDED | cut -d/ -f2- > excluded_incremental.txt
-grep ^non-incremental $EXCLUDED | cut -d/ -f2- > excluded_nonincremental.txt
+grep ^incremental $EXCLUDED | cut -d/ -f2- > $TMPDIR/excluded_incremental.txt
+grep ^non-incremental $EXCLUDED | cut -d/ -f2- > $TMPDIR/excluded_nonincremental.txt
 
 for i in inc mv sq uc Cloud Parallel; do
     if [ "$i" == "inc" ]; then
-        EXCLUDED=excluded_incremental.txt
+        EXCLUDED="-x $TMPDIR/excluded_incremental.txt"
         DECISION="-i $INC_DECISION"
+    elif [ "$i" == "Cloud" ]; then
+        DECISION="-d $CLOUD_DECISION"
+    elif [ "$i" == "Parallel" ]; then
+        DECISION="-d $PARALLEL_DECISION"
     else
-        EXCLUDED=excluded_nonincremental.txt
+        EXCLUDED="-x $TMPDIR/excluded_nonincremental.txt"
         DECISION="-d $NONINC_DECISION"
     fi
 
@@ -38,6 +42,6 @@ for i in inc mv sq uc Cloud Parallel; do
         FILTER="| grep -v -E -e '/QF_A?UFBV[LN]IA/'"
     fi
 
-    echo $PROCESS_CSV -x ${EXCLUDED} ${DECISION} $RESULT_DIR/raw-results-$i.csv
-    eval $PROCESS_CSV -x ${EXCLUDED} ${DECISION} $RESULT_DIR/raw-results-$i.csv  $FILTER > results-$i.csv
+    echo $PROCESS_CSV ${EXCLUDED} ${DECISION} $RESULT_DIR/raw-results-$i.csv
+    eval $PROCESS_CSV ${EXCLUDED} ${DECISION} $RESULT_DIR/raw-results-$i.csv  $FILTER > results-$i.csv
 done
