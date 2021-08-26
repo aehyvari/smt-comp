@@ -71,8 +71,9 @@ cat raw-results-Cloud.csv  |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq
    In `QF_FP` Par4 disagrees on two instance with known status
     - `QF_FP/griggio/fmcad12/test_v5_r15_vr5_c1_s23844.smt2`
     - `QF_FP/griggio/fmcad12/test_v5_r15_vr5_c1_s26657.smt2`
-   In `UFLRA` cvc5-gg disagrees on an instance with known status
+   In `UFLRA` cvc5-gg disagrees on two instances with known status
     - `UFLRA/misc/set14.smt2`
+    - `UFLRA/misc/list2.smt2`
 
 
 Parallel
