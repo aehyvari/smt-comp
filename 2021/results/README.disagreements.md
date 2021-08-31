@@ -48,10 +48,10 @@ Cloud
 -----
 
 ```
-cat raw-results-Cloud.csv  |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq | cut -d, -f1 |uniq -c | grep -v '   1 ' | awk '{print $2}' > Cloud-disagreements.txt
+cat raw-results-Cloud.csv |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq | cut -d, -f1 |uniq -c | grep -v '   1 ' | awk '{print $2}' > Cloud-disagreements.txt
 ```
 
-1. In `QF_BVFP` Par4 disagreed with all other on two instances with unknown
+1. In `QF_BVFP` Par4 disagreed with all others on two instances with unknown
    status:
     - `QF_BVFP/20170428-Liew-KLEE/imperial_gsl_benchmarks_differentiation_klee.x86_64/query.10.smt2`
     - `QF_BVFP/20170428-Liew-KLEE/imperial_synthetic_interval_klee_bug_symbolic_increment.x86_64/query.18.smt2`
@@ -80,7 +80,7 @@ Parallel
 --------
 
 ```
-cat raw-results-Parallel.csv  |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq | cut -d, -f1 |uniq -c | grep -v '   1 ' | awk '{print $2}' > Parallel-disagreements.txt
+cat raw-results-Parallel.csv |csvcut -c 2,12 |cut -d/ -f2- |grep sat$ | sort |uniq | cut -d, -f1 |uniq -c | grep -v '   1 ' | awk '{print $2}' > Parallel-disagreements.txt
 ```
 
 The disagreements are by the same solvers and in the same instances as
