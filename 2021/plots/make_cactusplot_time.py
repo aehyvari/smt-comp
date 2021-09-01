@@ -4,6 +4,8 @@ import csv
 import sys
 import argparse
 import json
+import os
+import yaml
 
 # Change the timeout here if needed
 to = 1200
@@ -68,15 +70,12 @@ def parseArgs():
     parser.add_argument("-u", "--unsound", required=False, \
             help="Csv indicating which solvers are known to be unsound"
                 "in which logic")
-    parser.add_argument("-d", "--division", required=False, \
-            help="The division to process.  Required if -u is" \
-                "specified")
-    parser.add_argument("-D", "--divisions", required=False, \
-            help="The divisions map file.  Required if -u is" \
-                "specified")
-    parser.add_argument("-t", "--track", required=False, \
-            help="The track to process.  Required if -u is" \
-                "specified")
+    parser.add_argument("-d", "--division", required=True, \
+            help="The division to process.")
+    parser.add_argument("-D", "--divisions", required=True, \
+            help="The divisions map file.")
+    parser.add_argument("-t", "--track", required=True, \
+            help="The track to process.")
     parser.add_argument("lists", metavar="N", nargs='*', \
             help="A result list")
 
@@ -88,10 +87,13 @@ if __name__ == '__main__':
 
     output = args.output
 
-    if args.unsound:
-        assert args.divisions
-        assert args.division
-        assert args.track
+    description_name = os.path.splitext(output)[0]
+
+    description = dict()
+    description['name'] = os.path.basename(description_name)
+    description['track'] = args.track
+    description['type'] = "cactus"
+    description['division'] = args.division
 
     input_files = args.lists if len(args.lists) > 0 else \
             list(map(lambda x: x.strip(), sys.stdin.readlines()))
@@ -102,6 +104,12 @@ if __name__ == '__main__':
     unsoundSolvers = dict() if args.unsound == None \
             else getUnsoundSolvers(args.unsound, \
                     args.divisions, args.track)
+
+    if args.division in unsoundSolvers.keys():
+        description['unsound'] = []
+        for solver in unsoundSolvers[args.division]:
+            description['unsound'].append({'name': solver})
+
 
     results = dict()
     max_runtime = list()
@@ -175,7 +183,7 @@ if __name__ == '__main__':
         results[k].sort(key=lambda x: x[1])
 
     print('#!/usr/bin/env gnuplot')
-    print('set term png transparent truecolor')
+    print('set term svg dynamic fname "Arvo"')
 
     print('set output "%s"' % output)
     print('set xlabel "instances"')
@@ -199,3 +207,5 @@ if __name__ == '__main__':
         print("\n".join(map(lambda x: str(x[1]), result)))
         print("e")
 
+    descr_file = open("{}.yml".format(description_name), 'w')
+    descr_file.write(yaml.dump(description))

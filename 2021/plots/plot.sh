@@ -42,11 +42,12 @@ function compare() {
         > $tmpdir/"$2"-$3.list
 
     $PLOTTER \
+        $3 \
         $tmpdir/"$1"-$3.list \
         $tmpdir/"$2"-$3.list \
         "$1" \
         "$2" \
-        figures/"$1"_vs_"$2"_$3.png \
+        figures/"$1"_vs_"$2"_$3.svg \
         > figures/"$1"_vs_"$2"_$3.gp \
 
     gnuplot figures/"$1"_vs_"$2"_$3.gp
@@ -177,11 +178,11 @@ if [ ! -z $GEN_CACTUS ]; then
                     |sort |uniq |while read -r solver_id; do
                 createCactusList "$track" "$solver_id" "$division"
             done \
-                | ./make_cactusplot_time.py \
+                | $CACTUSPLOTTER \
                 -d $division \
                 -D $DIVISION_FILE \
                 -t $track \
-                -o figures/"$track"_"$division".png \
+                -o figures/"$track"_"$division".svg \
                 -c $SOLVERS_CSV \
                 -u $tmpdir/unsound_solvers_$track.csv \
                     > figures/"$track"_"$division".gp \

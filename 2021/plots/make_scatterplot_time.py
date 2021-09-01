@@ -3,6 +3,8 @@
 import csv
 import sys
 import argparse
+import os
+import yaml
 
 # Change the timeout here if needed
 to = 1200
@@ -32,6 +34,7 @@ def getSolverIdMap(f):
 
 def parseArgs():
     parser = argparse.ArgumentParser(description=usage)
+    parser.add_argument("track", help="the track of the result")
     parser.add_argument("xresults", help="results for x-axis")
     parser.add_argument("yresults", help="results for y-axis")
     parser.add_argument("xlabel", help="label for x-axis")
@@ -45,6 +48,17 @@ if __name__ == '__main__':
     args = parseArgs()
 
     output = args.output
+    xlabel = args.xlabel
+    ylabel = args.ylabel
+
+    description_name = os.path.splitext(output)[0]
+
+    description = dict()
+    description['name'] = os.path.basename(description_name)
+    description['track'] = args.track
+    description['type'] = "scatter"
+    description['x-axis'] = xlabel
+    description['y-axis'] = ylabel
 
     x_l = open(args.xresults, 'r').readlines()
     y_l = open(args.yresults, 'r').readlines()
@@ -85,14 +99,14 @@ if __name__ == '__main__':
         min_x = min(filter(lambda x: x >= 0, \
                 map(lambda x: x_res[x][1], x_res)))
     except ValueError as e:
-        print("No results for {}".format(args.xlabel))
+        print("No results for {}".format(xlabel))
         sys.exit(1)
     try:
         max_y = max(map(lambda x: y_res[x][1], y_res))
         min_y = min(filter(lambda x: x >= 0, \
                 map(lambda x: y_res[x][1], y_res)))
     except ValueError as e:
-        print("No results for {}".format(args.ylabel))
+        print("No results for {}".format(ylabel))
         sys.exit(1)
 
     max_all = max(max_x, max_y)
@@ -126,11 +140,15 @@ if __name__ == '__main__':
 
     speedup = sum(speedups)/len(speedups)
 
+    description['average_speedup'] = speedup
+    description['total_speedup'] = x_total/float(y_total)
 
     solved_x = len(list(filter(lambda x: x_res[x][1] >= 0, x_res.keys())))
     solved_y = len(list(filter(lambda x: y_res[x][1] >= 0, y_res.keys())))
     print("x solved: {}, y solved: {}".format(solved_x, solved_y), file=sys.stderr)
 
+    description['x-solved'] = solved_x
+    description['y-solved'] = solved_y
 
     def postProc(h):
         for k in h:
@@ -145,14 +163,13 @@ if __name__ == '__main__':
     postProc(y_res)
 
     print('#!/usr/bin/env gnuplot')
-#    print('set term epslatex standalone color size 8, 4')
-    print('set term png transparent truecolor')
+    print('set term svg dynamic font "Arvo"')
 
     print('set output "%s"' % output)
     print('set size square')
     print('set size 0.8, 0.8')
-    print('set xlabel "%s"' % args.xlabel)
-    print('set ylabel "%s"' % args.ylabel)
+    print('set xlabel "%s"' % xlabel)
+    print('set ylabel "%s"' % ylabel)
     if (use_log):
         print('set logscale x')
         print('set logscale y')
@@ -203,6 +220,14 @@ if __name__ == '__main__':
                 unsat_strings.append("%.02f %.02f # %s" % (x_res[name][1], y_res[name][1], name))
             elif (x_res[name][0] == 'unsound') or (y_res[name][0] == 'unsound'):
                 unsound_strings.append("%0sf %.02f # %s" % (x_res[name][1], y_res[name][1], name))
+                if 'unsound' not in description:
+                    description['unsound'] = []
+                if x_res[name][0] == 'unsound':
+                    description['unsound'].append(\
+                            {'instance': name, 'solver': xlabel})
+                if y_res[name][0] == 'unsound':
+                    description['unsound'].append(\
+                            {'instance': name, 'solver': ylabel})
             else:
                 ukn_strings.append("%.02f %.02f # %s" % (x_res[name][1], y_res[name][1], name))
 
@@ -216,4 +241,7 @@ if __name__ == '__main__':
     print("e")
     print("\n".join(unsound_strings))
     print("e")
+
+    descr_file = open("{}.yml".format(description_name), 'w')
+    descr_file.write(yaml.dump(description))
 
