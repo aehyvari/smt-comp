@@ -48,13 +48,18 @@ function compare() {
         "$1" \
         "$2" \
         figures/"$1"_vs_"$2"_$3.svg \
+        2021 \
         > figures/"$1"_vs_"$2"_$3.gp \
 
     gnuplot figures/"$1"_vs_"$2"_$3.gp
 }
 
 function createCactusList() {
-    track=$1
+    if [ $1 == "sq" ]; then
+        track_tmp="single_query"
+    else
+        track_tmp=$1
+    fi
     solver_id=$2
     division=$3
     solver=$(getSolverName "$solver_id")
@@ -63,27 +68,31 @@ function createCactusList() {
 
     rm -rf $outname
 
-    if $($EXTRACTOR -c $RESULTS/results-$track.csv \
+    if $($EXTRACTOR -c $RESULTS/results-$1.csv \
             -s "$solver_id" \
             -t 1200 \
             -d "$division" \
-            --track "track_$1" \
+            --track "track_$track_tmp" \
             -f $DIVISION_FILE \
             --no-output); then
 
         echo "$outname"
-        $EXTRACTOR -c $RESULTS/results-$track.csv \
+        $EXTRACTOR -c $RESULTS/results-$1.csv \
             -s "$solver_id" \
             -t 1200 \
             -d "$division" \
-            --track "track_$1" \
+            --track "track_$track_tmp" \
             -f $DIVISION_FILE \
             > "$outname"
     fi
 }
 
 function getDivisionNames() {
-    track=$1
+    if [ $1 == "sq" ]; then
+        track=single_query
+    else
+        track=$1
+    fi
     python3 << __EOF__
 import json
 print(" ".join(json.loads(open("$DIVISION_FILE", "r").read())["track_$track"].keys()))
@@ -136,9 +145,11 @@ mkdir -p figures
 
 ./make_solver_id_to_name_map.py -c $SOLVERS_CSV > $tmpdir/idToNameMap.csv
 
+#for track in parallel cloud sq; do
 for track in parallel cloud; do
+
     ./get_unsound_solvers_csv.sh \
-        $RESULTS/results-cloud.csv \
+        $RESULTS/results-${track}.csv \
         $tmpdir/idToNameMap.csv \
         > $tmpdir/unsound_solvers_${track}.csv
 done
@@ -171,9 +182,15 @@ if [ ! -z $GEN_SCATTER ]; then
 fi
 
 if [ ! -z $GEN_CACTUS ]; then
+#    for track in sq cloud parallel; do
     for track in cloud parallel; do
+        if [ $track == "sq" ]; then
+            track_long=single_query
+        else
+            track_long=$track
+        fi
+
         for division in $(getDivisionNames $track); do
-            echo "Division $division:"
             csvcut -c 'solver id' ../scoring/results-$track.csv \
                     |sort |uniq |while read -r solver_id; do
                 createCactusList "$track" "$solver_id" "$division"
@@ -181,10 +198,11 @@ if [ ! -z $GEN_CACTUS ]; then
                 | $CACTUSPLOTTER \
                 -d $division \
                 -D $DIVISION_FILE \
-                -t $track \
+                -t $track_long \
                 -o figures/"$track"_"$division".svg \
                 -c $SOLVERS_CSV \
                 -u $tmpdir/unsound_solvers_$track.csv \
+                -y 2021 \
                     > figures/"$track"_"$division".gp \
                 && gnuplot figures/"$track"_"$division".gp
         done

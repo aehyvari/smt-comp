@@ -40,6 +40,7 @@ def parseArgs():
     parser.add_argument("xlabel", help="label for x-axis")
     parser.add_argument("ylabel", help="label for y-axis")
     parser.add_argument("output", help="output file name (png)")
+    parser.add_argument("year", type=int, help="year: used for placing plot files in the directory structure")
 
     return parser.parse_args()
 
@@ -55,10 +56,12 @@ if __name__ == '__main__':
 
     description = dict()
     description['name'] = os.path.basename(description_name)
+    description['year'] = args.year
     description['track'] = args.track
     description['type'] = "scatter"
     description['x-axis'] = xlabel
     description['y-axis'] = ylabel
+    description['plot'] = os.path.basename(output)
 
     x_l = open(args.xresults, 'r').readlines()
     y_l = open(args.yresults, 'r').readlines()
@@ -140,6 +143,7 @@ if __name__ == '__main__':
 
     speedup = sum(speedups)/len(speedups)
 
+    description['layout'] = "plot"
     description['average_speedup'] = speedup
     description['total_speedup'] = x_total/float(y_total)
 
@@ -163,7 +167,9 @@ if __name__ == '__main__':
     postProc(y_res)
 
     print('#!/usr/bin/env gnuplot')
-    print('set term svg dynamic font "Arvo"')
+    print('set term svg')
+
+#    print('set term svg dynamic font "Arvo"')
 
     print('set output "%s"' % output)
     print('set size square')
@@ -242,6 +248,6 @@ if __name__ == '__main__':
     print("\n".join(unsound_strings))
     print("e")
 
-    descr_file = open("{}.yml".format(description_name), 'w')
-    descr_file.write(yaml.dump(description))
+    descr_file = open("{}.md".format(description_name), 'w')
+    descr_file.write("---\n{}\n---".format(yaml.dump(description)))
 

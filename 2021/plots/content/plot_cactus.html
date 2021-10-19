@@ -1,0 +1,50 @@
+---
+layout: default
+plot_path: /2021/plot_data
+---
+<H2> Detailed Results: Parallel and Cloud Track Solver Comparisons</H2>
+
+This page reports a comparison between all solvers in a track using a
+cactus plot.
+
+{% assign tracks = "cloud, parallel" | split: ", " %}
+
+<ul>
+{% for track in tracks %}
+    <li><a href="#cactus_{{ track }}">{{ track }} track</a></li>
+{% endfor %}
+</ul>
+
+{% for track in tracks %}
+
+<H3> <a name="cactus_{{ track }}"></a>Solver comparisons in {{ track }} track</H3>
+
+The cactus plots below show results on the solvers submitted to the
+{{ track }} track as well as solvers that ran on single-query
+track that I ran on starexec.  The {{ track }} track solvers are plotted with
+a thicker line.  An asterisk after a solver name indicates that the solver was
+unsound in the division in question (in the {{ track }} track).
+<p>
+Quick links:
+  {% assign cactus_plots = site.plots_2021 |where: "type", "cactus" |where: "track", track %}
+
+  {% for pic in cactus_plots %}
+<a href="#{{ track }}_{{ pic.division }}">{{ pic.division }}</a>
+  {% endfor %}
+<p>
+
+
+  {% for pic in cactus_plots %}
+<H5><a name="{{ track }}_{{ pic.division }}"></a>Track {{ track }}, Division {{ pic.division }}</H5>
+<img src="{{ page.plot_path }}/{{ pic.name }}.svg"/>
+    {% if pic.unsound %}
+<p> Unsound solvers on this track and division:
+<ul>
+      {% for solver in pic.unsound %}
+  <li>{{ solver.name }}</li>
+      {% endfor %}
+</ul>
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+

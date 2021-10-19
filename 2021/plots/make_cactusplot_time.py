@@ -10,6 +10,10 @@ import yaml
 # Change the timeout here if needed
 to = 1200
 
+def die(s):
+    print("{}: {}".format(sys.argv[0], s), file=sys.stderr)
+    sys.exit(1)
+
 usage = """
 Create cactus gnuplot scripts using the png driver.
 The results files should consist of lines of the form
@@ -78,6 +82,7 @@ def parseArgs():
             help="The track to process.")
     parser.add_argument("lists", metavar="N", nargs='*', \
             help="A result list")
+    parser.add_argument("-y", "--year", type=int, help="year: used for placing plot files in the directory structure")
 
     return parser.parse_args()
 
@@ -90,10 +95,13 @@ if __name__ == '__main__':
     description_name = os.path.splitext(output)[0]
 
     description = dict()
+    description['layout'] = "plot"
     description['name'] = os.path.basename(description_name)
     description['track'] = args.track
     description['type'] = "cactus"
     description['division'] = args.division
+    description['year'] = args.year
+    description['plot'] = os.path.basename(output)
 
     input_files = args.lists if len(args.lists) > 0 else \
             list(map(lambda x: x.strip(), sys.stdin.readlines()))
@@ -162,7 +170,8 @@ if __name__ == '__main__':
 
     if len(max_runtime) == 0:
         assert len(min_runtime) == 0
-        print("No result for any input file", file=sys.stderr)
+        die("No result for any input file on track {}, "\
+            "division {}".format(args.track, args.division))
         sys.exit(1)
 
     max_all = max(max_runtime)
@@ -181,20 +190,23 @@ if __name__ == '__main__':
     for k in results.keys():
         postProc(results[k])
         results[k].sort(key=lambda x: x[1])
+        # add the index
+        for i in range(0, len(results[k])):
+            results[k][i].append(i+1)
 
     print('#!/usr/bin/env gnuplot')
     print('set term svg dynamic fname "Arvo"')
 
     print('set output "%s"' % output)
-    print('set xlabel "instances"')
-    print('set ylabel "timeout"')
+    print('set xlabel "timeout"')
+    print('set ylabel "instances"')
     if (use_log):
-        print('set logscale y')
-    print('set key right bottom')
-    print('set yrange [%f:%f]' % (low, bnd))
-    print('set pointsize 1.5')
+        print('set logscale x')
+    print('set key left top')
+    print('set xrange [%f:%f]' % (low, bnd))
+    print('set pointsize 1')
 
-    print('plot %s title "timeout", %s' % (to, \
+    print('plot %s' % (\
         ", ".join(['"-" with linespoints title "%s" %s' % \
                     (x if args.division not in unsoundSolvers.keys() or \
                           x not in unsoundSolvers[args.division] \
@@ -204,8 +216,8 @@ if __name__ == '__main__':
 
     for name in results.keys():
         result = results[name]
-        print("\n".join(map(lambda x: str(x[1]), result)))
+        print("\n".join(map(lambda x: " ".join(map(str, x[1:3])), result)))
         print("e")
 
-    descr_file = open("{}.yml".format(description_name), 'w')
-    descr_file.write(yaml.dump(description))
+    descr_file = open("{}.md".format(description_name), 'w')
+    descr_file.write("---\n{}\n---".format(yaml.dump(description)))

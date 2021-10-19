@@ -1,0 +1,49 @@
+---
+layout: default
+plot_path: /2021/plot_data
+---
+<H2> Detailed Results: Version Comparisions</H2>
+
+The <em>Version comparisons</em> compare (mostly) the
+sequential and parallel versions of a solver.
+
+<ul>
+  <li><a href="#scatter_cloud">Cloud track</a></li>
+  <li><a href="#scatter_parallel">Parallel track</a></li>
+</ul>
+
+{% assign tracks = "cloud, parallel" | split: ", " %}
+
+{% for track in tracks %}
+
+<H3><a name="scatter_{{ track }}"></a>{{ track }} track</H3>
+
+A version of these solvers were submitted in both {{ track }} and single-query
+tracks, allowing a comparison between the two versions.
+{% if track == "cloud" %}
+In case of SMTS, two versions were submitted to the cloud track.
+{% endif %}
+
+  {% assign scatter_plot = site.plots_2021 |where: "type", "scatter" |where: "track", track %}
+  {% for pic in scatter_plot %}
+  <h3> {{ pic.x-axis }} vs. {{ pic.y-axis }}</h3>
+<img src="{{ page.plot_path }}/{{ pic.plot }}"/>
+<ul>
+  <li>{{ pic.x-axis }} solved {{ pic.x-solved }} instances.</li>
+  <li>{{ pic.y-axis }} solved {{ pic.y-solved }} instances.</li>
+  <li>{{ pic.y-axis }} is in total {{ pic.total_speedup | round: 2}} times faster than
+    {{ pic.x-axis }}</li>
+  <li>{{ pic.y-axis }} is on average {{ pic.average_speedup | round: 2}} times faster than
+    {{ pic.x-axis }}</li>
+    {% if pic.unsound %}
+  <li>Unsoundnesses:</li>
+  <ul>
+      {% for unsoundness in pic.unsound %}
+    <li>{{ unsoundness.solver }} is unsound on `{{ unsoundness.instance }}` </li>
+      {% endfor %}
+  </ul>
+    {% endif %}
+</ul>
+  {% endfor %}
+{% endfor %}
+

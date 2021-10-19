@@ -8,7 +8,7 @@ sq="47304 47543 47546 47966"
 inc="47350 47540 47689"
 mv="47305 47542 47727"
 uc="47790 47815 47866 47867 47916"
-Cloud="48423 AwsCloud"
+Cloud="48423 AwsCloud AwsOurCloud"
 Parallel="48437 AwsParallel"
 
 COLORDER=../../tools/process-results/unify_column_order.py
