@@ -192,7 +192,11 @@ if __name__ == '__main__':
         results[k].sort(key=lambda x: x[1])
         # add the index
         for i in range(0, len(results[k])):
-            results[k][i].append(i+1)
+            if results[k][i][1] == bnd:
+                results[k][i].append(i)
+                break
+            else:
+                results[k][i].append(i+1)
 
     print('#!/usr/bin/env gnuplot')
     print('set term svg dynamic fname "Arvo"')
